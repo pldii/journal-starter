@@ -1,11 +1,11 @@
+import logging
 
 from dotenv import load_dotenv
-import logging
-load_dotenv(override=True)
-
 from fastapi import FastAPI
 
 from api.routers.journal_router import router as journal_router
+
+load_dotenv(override=True)
 
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s %(levelname)s - %(message)s')

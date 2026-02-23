@@ -1,9 +1,10 @@
 from collections.abc import AsyncGenerator
 
 from fastapi import APIRouter, Depends, HTTPException
-from api.services import llm_service
+
 from api.models.entry import Entry, EntryCreate
 from api.repositories.postgres_repository import PostgresDB
+from api.services import llm_service
 from api.services.entry_service import EntryService
 
 router = APIRouter()
@@ -78,7 +79,7 @@ async def delete_all_entries(entry_service: EntryService = Depends(get_entry_ser
 
 @router.post("/entries/{entry_id}/analyze")
 async def analyze_entry(entry_id: str, entry_service: EntryService = Depends(get_entry_service)):
-    
+
     entry = await entry_service.get_entry(entry_id)
     if not entry:
         raise HTTPException(status_code=404, detail="Entry not found")
@@ -87,6 +88,6 @@ async def analyze_entry(entry_id: str, entry_service: EntryService = Depends(get
         analysis_result = await llm_service.analyze_journal_entry(entry_id, entry_text)
         return analysis_result
     except ValueError as e:
-        raise HTTPException(status_code=500, detail=f"Configuration error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Configuration error: {str(e)}") from e
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Analysis failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Analysis failed: {str(e)}") from e

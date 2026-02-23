@@ -44,7 +44,7 @@ class Entry(BaseModel):
         default_factory=lambda: str(uuid4()),
         description="Unique identifier for the entry (UUID)."
     )
-    schema_version: str = Field(default="1.0", description="Schema version") 
+    schema_version: str = Field(default="1.0", description="Schema version")
 
     work: str = Field(
         min_length=0,
