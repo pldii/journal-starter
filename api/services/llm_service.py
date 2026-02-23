@@ -1,34 +1,33 @@
+import os
+from openai import AsyncOpenAI
+from datetime import datetime, UTC
 
-# TODO: Import your chosen LLM SDK
-# from openai import OpenAI
-# import anthropic
-# import boto3
-# from google.cloud import aiplatform
-
+client = AsyncOpenAI(
+    api_key=os.getenv("OPENAI_API_KEY"),
+    base_url=os.getenv("OPENAI_BASE_URL")
+)
 
 async def analyze_journal_entry(entry_id: str, entry_text: str) -> dict:
-    """
-    Analyze a journal entry using your chosen LLM API.
-
-    Args:
-        entry_id: The ID of the journal entry being analyzed
-        entry_text: The combined text of the journal entry (work + struggle + intention)
-
-    Returns:
-        dict with keys:
-            - entry_id: ID of the analyzed entry
-            - sentiment: "positive" | "negative" | "neutral"
-            - summary: 2 sentence summary of the entry
-            - topics: list of 2-4 key topics mentioned
-            - created_at: timestamp when the analysis was created
-
-    TODO: Implement this function using your chosen LLM provider.
-    See the Learn to Cloud curriculum for guidance on:
-    - Setting up your LLM API client
-    - Crafting effective prompts
-    - Handling structured JSON output
-    """
-    raise NotImplementedError(
-        "Implement this function using your chosen LLM API. "
-        "See the Learn to Cloud curriculum for guidance."
+    response = await client.chat.completions.create(
+        model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
+        messages=[
+            {
+                "role": "system",
+                "content": "Analyze the journal entry and respond with JSON only: {\"sentiment\": \"positive|negative|neutral\", \"summary\": \"2 sentence summary\", \"topics\": [\"topic1\", \"topic2\"]}"
+            },
+            {"role": "user", "content": entry_text}
+        ],
+        response_format={"type": "json_object"}
     )
+    
+    result = response.choices[0].message.content
+    import json
+    data = json.loads(result)
+    
+    return {
+        "entry_id": entry_id,
+        "sentiment": data["sentiment"],
+        "summary": data["summary"],
+        "topics": data["topics"],
+        "created_at": datetime.now(UTC).isoformat()
+    }
